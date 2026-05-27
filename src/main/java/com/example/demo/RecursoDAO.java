@@ -1,6 +1,5 @@
 package com.example.demo;
 
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -32,12 +31,12 @@ public class RecursoDAO {
     public Recurso obtenerPorId(int id) throws IOException {
         String query = "id=eq." + id;
         String response = SupabaseConfig.get("recursos", query);
-        
+
         JsonArray array = JsonParser.parseString(response).getAsJsonArray();
         if (array.size() > 0) {
             JsonObject obj = array.get(0).getAsJsonObject();
             String tipo = obj.get("tipo").getAsString();
-            
+
             if ("LIBRO".equals(tipo)) {
                 return obtenerLibroPorId(id);
             } else if ("REVISTA".equals(tipo)) {
@@ -50,7 +49,7 @@ public class RecursoDAO {
     public Libro obtenerLibroPorId(int id) throws IOException {
         String query = "id=eq." + id;
         String response = SupabaseConfig.get("libros", query);
-        
+
         JsonArray array = JsonParser.parseString(response).getAsJsonArray();
         if (array.size() > 0) {
             JsonObject obj = array.get(0).getAsJsonObject();
@@ -61,8 +60,7 @@ public class RecursoDAO {
                     obj.get("editorial").getAsString(),
                     obj.get("genero").getAsString(),
                     obj.get("copias").getAsInt(),
-                    obj.get("numero_paginas").getAsInt()
-            );
+                    obj.get("numero_paginas").getAsInt());
         }
         return null;
     }
@@ -70,7 +68,7 @@ public class RecursoDAO {
     public Revista obtenerRevistaPorId(int id) throws IOException {
         String query = "id=eq." + id;
         String response = SupabaseConfig.get("revistas", query);
-        
+
         JsonArray array = JsonParser.parseString(response).getAsJsonArray();
         if (array.size() > 0) {
             JsonObject obj = array.get(0).getAsJsonObject();
@@ -81,33 +79,35 @@ public class RecursoDAO {
                     obj.get("editorial").getAsString(),
                     obj.get("genero").getAsString(),
                     obj.get("copias").getAsInt(),
-                    obj.get("edicion").getAsInt()
-            );
+                    obj.get("edicion").getAsInt());
         }
         return null;
     }
 
-public List<Recurso> obtenerTodos() throws IOException {
+    public List<Recurso> obtenerTodos() throws IOException {
         // 1. Traemos toda la info general de la tabla recursos
         String response = SupabaseConfig.get("recursos", "select=*");
         List<Recurso> recursos = new ArrayList<>();
 
         JsonArray array = JsonParser.parseString(response).getAsJsonArray();
-        
+
         for (JsonElement element : array) {
             JsonObject obj = element.getAsJsonObject();
-            
-            // Leemos los datos generales que SÍ están en la tabla recursos
+
             int id = obj.get("id").getAsInt();
             String tipo = obj.get("tipo").getAsString();
-            String titulo = obj.has("titulo") && !obj.get("titulo").isJsonNull() ? obj.get("titulo").getAsString() : "Sin título";
-            String autor = obj.has("autor") && !obj.get("autor").isJsonNull() ? obj.get("autor").getAsString() : "Desconocido";
-            String editorial = obj.has("editorial") && !obj.get("editorial").isJsonNull() ? obj.get("editorial").getAsString() : "Desconocida";
-            String genero = obj.has("genero") && !obj.get("genero").isJsonNull() ? obj.get("genero").getAsString() : "General";
+            String titulo = obj.has("titulo") && !obj.get("titulo").isJsonNull() ? obj.get("titulo").getAsString()
+                    : "Sin título";
+            String autor = obj.has("autor") && !obj.get("autor").isJsonNull() ? obj.get("autor").getAsString()
+                    : "Desconocido";
+            String editorial = obj.has("editorial") && !obj.get("editorial").isJsonNull()
+                    ? obj.get("editorial").getAsString()
+                    : "Desconocida";
+            String genero = obj.has("genero") && !obj.get("genero").isJsonNull() ? obj.get("genero").getAsString()
+                    : "General";
             int copias = obj.has("copias") && !obj.get("copias").isJsonNull() ? obj.get("copias").getAsInt() : 0;
 
             if ("LIBRO".equals(tipo)) {
-                // 2. Si es libro, vamos a la tabla 'libros' SOLO a buscar el numero_paginas
                 int paginas = 0;
                 String libRes = SupabaseConfig.get("libros", "id=eq." + id);
                 JsonArray libArr = JsonParser.parseString(libRes).getAsJsonArray();
@@ -118,9 +118,8 @@ public List<Recurso> obtenerTodos() throws IOException {
                     }
                 }
                 recursos.add(new Libro(id, titulo, autor, editorial, genero, copias, paginas));
-                
+
             } else if ("REVISTA".equals(tipo)) {
-                // 3. Si es revista, vamos a la tabla 'revistas' SOLO a buscar la edicion
                 int edicion = 0;
                 String revRes = SupabaseConfig.get("revistas", "id=eq." + id);
                 JsonArray revArr = JsonParser.parseString(revRes).getAsJsonArray();

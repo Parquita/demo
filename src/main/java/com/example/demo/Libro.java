@@ -8,7 +8,6 @@ public class Libro extends Recurso {
         this.numeroPaginas = numeroPaginas;
     }
 
-    // Spring Boot necesita este método exacto para enviarlo como JSON
     @Override
     public Integer getNumeroPaginas() {
         return numeroPaginas;

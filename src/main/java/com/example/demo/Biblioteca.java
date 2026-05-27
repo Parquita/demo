@@ -102,7 +102,6 @@ public class Biblioteca {
     }
 
     public void actualizarRecurso(int id, java.util.Map<String, Object> datos) throws Exception {
-        // Extraemos los datos que nos mandó la web
         com.google.gson.JsonObject data = new com.google.gson.JsonObject();
         data.addProperty("titulo", datos.get("titulo").toString());
         data.addProperty("autor", datos.get("autor").toString());
@@ -110,42 +109,34 @@ public class Biblioteca {
         data.addProperty("genero", datos.get("genero").toString());
         data.addProperty("copias", Integer.parseInt(datos.get("copias").toString()));
         
-        // Actualizamos la tabla principal en Supabase usando tu configuración
         SupabaseConfig.patch("recursos", id, data);
     }
 
-    // 1. Método para CREAR el préstamo
-    // 1. Método para CREAR el préstamo (AHORA CON CONTRASEÑA)
     public String prestar(int idRecurso, int idUsuario, String fechaDevolucion, String contrasenaIngresada) {
         try {
-            // A. NUEVO: Validar identidad del usuario
             String userRes = SupabaseConfig.get("usuarios", "id=eq." + idUsuario);
             com.google.gson.JsonArray arrayUser = com.google.gson.JsonParser.parseString(userRes).getAsJsonArray();
             if (arrayUser.size() == 0) return "Usuario no encontrado en la base de datos.";
             
             String claveReal = arrayUser.get(0).getAsJsonObject().get("contraseña").getAsString();
             if (!claveReal.equals(contrasenaIngresada)) {
-                return "Contraseña incorrecta. Préstamo denegado."; // Si fallan, bloqueamos aquí
+                return "Contraseña incorrecta. Préstamo denegado.";
             }
 
-            // B. Buscar el recurso para saber sus copias totales
             String resData = SupabaseConfig.get("recursos", "id=eq." + idRecurso);
             com.google.gson.JsonArray arrayRecursos = com.google.gson.JsonParser.parseString(resData).getAsJsonArray();
             if (arrayRecursos.size() == 0) return "El recurso solicitado no existe.";
             
             int copiasTotales = arrayRecursos.get(0).getAsJsonObject().get("copias").getAsInt();
 
-            // C. Buscar cuántas copias están prestadas actualmente (devuelto = false)
             String prestamosData = SupabaseConfig.get("prestamos", "id_recurso=eq." + idRecurso + "&devuelto=eq.false");
             com.google.gson.JsonArray arrayPrestamos = com.google.gson.JsonParser.parseString(prestamosData).getAsJsonArray();
             int copiasPrestadas = arrayPrestamos.size();
 
-            // D. Verificar si hay disponibilidad
             if (copiasPrestadas >= copiasTotales) {
                 return "No hay copias disponibles en este momento.";
             }
 
-            // E. Insertar el nuevo préstamo
             com.google.gson.JsonObject nuevoPrestamo = new com.google.gson.JsonObject();
             nuevoPrestamo.addProperty("id_usuario", idUsuario);
             nuevoPrestamo.addProperty("id_recurso", idRecurso);
@@ -153,7 +144,7 @@ public class Biblioteca {
             nuevoPrestamo.addProperty("devuelto", false);
 
             SupabaseConfig.post("prestamos", nuevoPrestamo);
-            return "EXITO"; // Todo salió bien
+            return "EXITO";
 
         } catch (Exception e) {
             System.err.println("Error al prestar: " + e.getMessage());
@@ -161,10 +152,8 @@ public class Biblioteca {
         }
     }
 
-    // 2. Método para OBTENER los préstamos de un usuario
     public String obtenerMisPrestamos(int idUsuario) {
         try {
-            // Traemos solo los préstamos activos (devuelto = false) de ese usuario
             return SupabaseConfig.get("prestamos", "id_usuario=eq." + idUsuario + "&devuelto=eq.false");
         } catch (Exception e) {
             System.err.println("Error al obtener préstamos: " + e.getMessage());
@@ -172,30 +161,20 @@ public class Biblioteca {
         }
     }
 
-    // ==========================================
-    // LÓGICA DE USUARIOS
-    // ==========================================
-
-    // 1. REGISTRAR USUARIO
     public boolean registrarUsuario(String usuario, String correo, String contrasena) {
         try {
-            // A. Primero verificamos si el correo ya existe
             String resData = SupabaseConfig.get("usuarios", "correo=eq." + correo);
             com.google.gson.JsonArray arrayUsuarios = com.google.gson.JsonParser.parseString(resData).getAsJsonArray();
             
-            // Si el tamaño es mayor a 0, el correo ya está registrado
             if (arrayUsuarios.size() > 0) {
                 return false; 
             }
 
-            // B. Si no existe, creamos el JSON para insertarlo (usando el nombre exacto de tus columnas)
             com.google.gson.JsonObject nuevoUsuario = new com.google.gson.JsonObject();
             nuevoUsuario.addProperty("usuario", usuario);
             nuevoUsuario.addProperty("correo", correo);
-            nuevoUsuario.addProperty("contraseña", contrasena); // Ojo a la 'ñ'
+            nuevoUsuario.addProperty("contraseña", contrasena);
             
-            // La fecha_registro suele generarse automáticamente en Supabase si le pusiste valor por defecto (now())
-
             SupabaseConfig.post("usuarios", nuevoUsuario);
             return true;
 
@@ -205,34 +184,28 @@ public class Biblioteca {
         }
     }
 
-    // 2. INICIAR SESIÓN (LOGIN)
     public String iniciarSesion(String correo, String contrasena) {
         try {
-            // Buscamos un registro que coincida con el correo Y la contraseña exacta
             String resData = SupabaseConfig.get("usuarios", "correo=eq." + correo + "&contraseña=eq." + contrasena);
             com.google.gson.JsonArray arrayUsuarios = com.google.gson.JsonParser.parseString(resData).getAsJsonArray();
             
             if (arrayUsuarios.size() > 0) {
-                // Login exitoso: Tomamos los datos del usuario
                 com.google.gson.JsonObject user = arrayUsuarios.get(0).getAsJsonObject();
                 
-                // Por seguridad, borramos la contraseña antes de enviar los datos al frontend
                 user.remove("contraseña"); 
                 
-                // Devolvemos los datos del usuario (id, usuario, correo) como texto JSON
                 return user.toString();
             }
             
-            return null; // Credenciales incorrectas
+            return null;
         } catch (Exception e) {
             System.err.println("Error en login: " + e.getMessage());
             return null;
         }
     }
-    // 3. OBTENER TODOS LOS PRÉSTAMOS ACTIVOS (Para el Bibliotecario)
+
     public String obtenerTodosLosPrestamos() {
         try {
-            // Traemos todos los préstamos activos (devuelto = false) sin importar de quién sean
             return SupabaseConfig.get("prestamos", "devuelto=eq.false");
         } catch (Exception e) {
             System.err.println("Error al obtener todos los préstamos: " + e.getMessage());

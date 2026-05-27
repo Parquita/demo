@@ -6,8 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biblioteca Virtual - Panel Bibliotecario</title>
     <style>
-        /* ===== ESTILOS GENERALES Y LAYOUT EXISTENTE ===== */
-        /* (Estos son los mismos estilos base que usamos en panel-lector.html) */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -109,7 +107,6 @@
             display: block;
         }
 
-        /* Vistas Explorar y Préstamos (Simplificadas para el ejemplo) */
         .catalogo-title {
             font-size: 20px;
             margin-top: 0;
@@ -181,7 +178,6 @@
             color: #2c5468;
         }
 
-        /* ===== VISTA: PANEL DE CONTROL ===== */
         .resumen-control {
             display: flex;
             gap: 15px;
@@ -296,7 +292,6 @@
             gap: 10px;
         }
 
-        /* ===== NUEVA MODAL: AÑADIR RECURSO ===== */
         .modal-add-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px);
@@ -331,7 +326,6 @@
 
         .btn-add-submit { background-color: #2c5468; color: white; border: none; border-radius: 8px; padding: 10px 40px; font-weight: bold; cursor: pointer; font-size: 14px; margin: 20px auto 10px; display: block; }
 
-        /* ===== MODALES DE PRÉSTAMO (Confirmar, Éxito, Error) ===== */
         .modal-action-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px);
@@ -354,12 +348,10 @@
         .btn-cancel { background-color: #e0e0e0; color: #000; }
         .btn-confirm { background-color: #558296; color: white; }
 
-        /* Estilos específicos Error */
         .modal-error-title { color: #d32f2f; }
         .error-icon { font-size: 60px; color: #d32f2f; margin: 10px 0; }
         .error-msg-box { background-color: #ffcdd2; color: #b71c1c; padding: 10px; border-radius: 20px; margin: 15px 0; font-size: 12px; font-weight: bold;}
 
-        /* Estilos específicos Éxito */
         .success-icon { font-size: 60px; color: #4CAF50; margin: 10px 0; }
     </style>
 </head>
@@ -603,9 +595,6 @@
     </div>
 
     <script>
-// --------------------------------------------------------
-        // 1. VARIABLES GLOBALES Y ARRANQUE
-        // --------------------------------------------------------
         let recursos_reales = {};
         let idRecursoEditando = null;
 
@@ -615,10 +604,7 @@
             configurarFormularioAgregar();
         });
 
-        // --------------------------------------------------------
-        // 2. CARGAR DATOS DESDE JAVA (SUPABASE)
-        // --------------------------------------------------------
-function cargarCatalogoYTablaDesdeJava() {
+        function cargarCatalogoYTablaDesdeJava() {
             fetch('/api/recursos')
                 .then(respuesta => {
                     if (!respuesta.ok) throw new Error("Error: " + respuesta.status);
@@ -632,7 +618,6 @@ function cargarCatalogoYTablaDesdeJava() {
                     if (contenedorCatalogo) contenedorCatalogo.innerHTML = '';
                     if (cuerpoTabla) cuerpoTabla.innerHTML = '';
 
-                    // Variables para los contadores
                     let totalRecursos = 0;
                     let prestamosActivos = 0;
 
@@ -640,10 +625,8 @@ function cargarCatalogoYTablaDesdeJava() {
                         if (recurso === null) return;
                         recursos_reales[recurso.id] = recurso;
 
-                        // Sumar al total
                         totalRecursos++;
                         
-                        // Calcular cuántos están prestados (Copias totales - Copias disponibles)
                         const copiasTotales = recurso.copias || 0;
                         const disponibles = recurso.copiasDisponibles !== undefined ? recurso.copiasDisponibles : copiasTotales;
                         prestamosActivos += (copiasTotales - disponibles);
@@ -656,7 +639,6 @@ function cargarCatalogoYTablaDesdeJava() {
                         const copias = recurso.copias || 0;
                         const estado = (recurso.copiasDisponibles && recurso.copiasDisponibles > 0) ? 'Disponible' : 'Agotado';
 
-                        // A. Llenar el Catálogo (Vista Explorar)
                         if (contenedorCatalogo) {
                             const tarjeta = `
                                 <div class="tarjeta-libro" data-id="${recursoId}" data-type="${tipoRecurso}">
@@ -672,7 +654,6 @@ function cargarCatalogoYTablaDesdeJava() {
                             contenedorCatalogo.innerHTML += tarjeta;
                         }
 
-                        // B. Llenar la Tabla (Panel de Control)
                         if (cuerpoTabla) {
                             const fila = `
                                 <tr>
@@ -697,9 +678,8 @@ function cargarCatalogoYTablaDesdeJava() {
                             `;
                             cuerpoTabla.innerHTML += fila;
                         }
-                    }); // Aquí termina el forEach
+                    }); 
 
-                    // ¡FIJATE AQUÍ! Actualizamos los contadores afuera del ciclo, cuando ya terminó de contar todo
                     const badgeTotal = document.getElementById('badge-total');
                     const badgePrestamos = document.getElementById('badge-prestamos');
                     if (badgeTotal) badgeTotal.innerText = `TOTAL RECURSOS REGISTRADOS: ${totalRecursos}`;
@@ -710,9 +690,8 @@ function cargarCatalogoYTablaDesdeJava() {
                     console.error("Error conectando al servidor:", error);
                 });
         }
-        // Función exclusiva para el Bibliotecario: Cargar TODO
+
         function cargarMisPrestamos() {
-            // Ya no validamos el ID para filtrar, porque el admin ve todo
             fetch('/api/prestamos/todos')
                 .then(res => res.json())
                 .then(prestamos => {
@@ -753,7 +732,7 @@ function cargarCatalogoYTablaDesdeJava() {
                 .catch(err => console.error("Error cargando todos los préstamos:", err));
         }
 
-function devolverRecurso(idPrestamo) {
+        function devolverRecurso(idPrestamo) {
             if(confirm("¿Confirmas la devolución de este recurso?")) {
                 fetch('/api/prestamos/' + idPrestamo + '/devolver', {
                     method: 'PUT'
@@ -761,7 +740,6 @@ function devolverRecurso(idPrestamo) {
                 .then(respuesta => {
                     if (respuesta.ok) {
                         alert("¡Recurso devuelto con éxito!");
-                        // Recargamos ambas vistas para actualizar disponibilidades
                         cargarCatalogoYTablaDesdeJava(); 
                         cargarMisPrestamos(); 
                     } else {
@@ -772,17 +750,13 @@ function devolverRecurso(idPrestamo) {
             }
         }
 
-        // --------------------------------------------------------
-        // 3. ENVIAR NUEVO RECURSO A JAVA
-        // --------------------------------------------------------
-function configurarFormularioAgregar() {
+        function configurarFormularioAgregar() {
             const formAdd = document.getElementById('form-add-recurso');
             
             if (formAdd) {
                 formAdd.addEventListener('submit', function (e) {
-                    e.preventDefault(); // Detener recarga de página
+                    e.preventDefault(); 
 
-                    // Capturamos los datos escritos en la modal
                     const titulo = document.getElementById('add-titulo').value;
                     const autor = document.getElementById('add-autor').value;
                     const editorial = document.getElementById('add-editorial').value;
@@ -805,18 +779,15 @@ function configurarFormularioAgregar() {
                         recursoData.edicion = parseInt(especifico);
                     }
 
-                    // DETERMINACIÓN DINÁMICA: ¿Creación o Edición?
                     let url = '/api/recursos/' + tipo; 
-                    let metodoHttp = 'POST';           
+                    let metodoHttp = 'POST';          
 
-                    // Si la variable global contiene un ID válido, cambiamos las propiedades a actualización
                     if (idRecursoEditando !== null) {
                         url = '/api/recursos/' + idRecursoEditando;
                         metodoHttp = 'PUT'; 
                         recursoData.tipo = tipo; 
                     }
 
-                    // Abre la consola del navegador (F12) para ver este mensaje clave
                     console.log("ℹ️ Enviando petición:", "Método:", metodoHttp, "URL:", url, "Datos:", recursoData);
 
                     fetch(url, {
@@ -830,14 +801,12 @@ function configurarFormularioAgregar() {
                             document.getElementById('modal-add-overlay').style.display = 'none';
                             formAdd.reset(); 
                             
-                            // IMPORTANTE: Limpiamos la variable global al finalizar con éxito
                             idRecursoEditando = null; 
                             
-                            // Reestablecemos el diseño original de la modal
                             document.querySelector('.modal-add-header').childNodes[0].nodeValue = " AÑADIR NUEVO RECURSO ";
                             document.querySelector('.btn-add-submit').innerText = "AGREGAR";
                             
-                            cargarCatalogoYTablaDesdeJava(); // Refrescar los componentes visuales
+                            cargarCatalogoYTablaDesdeJava(); 
                         } else {
                             alert("Error al procesar la solicitud en el servidor.");
                         }
@@ -846,7 +815,6 @@ function configurarFormularioAgregar() {
                 });
             }
 
-            // Cambiar placeholder dinámicamente según la selección radial
             const radiosTipo = document.querySelectorAll('input[name="tipoNuevo"]');
             const inputEspecifico = document.getElementById('input-especifico');
             radiosTipo.forEach(radio => {
@@ -855,12 +823,11 @@ function configurarFormularioAgregar() {
                 });
             });
             
-            // Acción del botón principal para abrir la modal en modo "CREACIÓN"
             const btnOpenAdd = document.querySelector('.btn-agregar');
             if (btnOpenAdd) {
                 btnOpenAdd.addEventListener('click', () => {
                     if(formAdd) formAdd.reset();
-                    idRecursoEditando = null; // Nos aseguramos de limpiar la variable
+                    idRecursoEditando = null; 
                     document.querySelector('.modal-add-header').childNodes[0].nodeValue = " AÑADIR NUEVO RECURSO ";
                     document.querySelector('.btn-add-submit').innerText = "AGREGAR";
                     document.getElementById('modal-add-overlay').style.display = 'flex';
@@ -872,14 +839,11 @@ function configurarFormularioAgregar() {
             const recurso = recursos_reales[id];
             if(!recurso) return;
 
-            // 1. Almacenamos el ID de destino en la variable global de control
             idRecursoEditando = id;
 
-            // 2. Modificamos la apariencia de la ventana modal para modo edición
             document.querySelector('.modal-add-header').childNodes[0].nodeValue = " EDITAR RECURSO ";
             document.querySelector('.btn-add-submit').innerText = "GUARDAR CAMBIOS";
 
-            // 3. Cargamos los datos actuales en los campos correspondientes
             document.getElementById('add-titulo').value = recurso.titulo || '';
             document.getElementById('add-autor').value = recurso.autor || '';
             document.getElementById('add-editorial').value = recurso.editorial || '';
@@ -901,20 +865,17 @@ function configurarFormularioAgregar() {
 
             document.getElementById('modal-add-overlay').style.display = 'flex';
         }
-// --------------------------------------------------------
-        // NUEVAS FUNCIONES: ELIMINAR Y EDITAR
-        // --------------------------------------------------------
+
         function eliminarRecurso(id) {
-            // Confirmación de seguridad
             if(confirm("¿Estás seguro de que deseas eliminar este recurso definitivamente? Esta acción no se puede deshacer.")) {
                 
                 fetch('/api/recursos/' + id, {
-                    method: 'DELETE' // Método HTTP para borrar
+                    method: 'DELETE' 
                 })
                 .then(respuesta => {
                     if(respuesta.ok) {
                         alert("¡Recurso eliminado de la base de datos!");
-                        cargarCatalogoYTablaDesdeJava(); // Recarga la tabla para que desaparezca
+                        cargarCatalogoYTablaDesdeJava(); 
                     } else {
                         alert("Hubo un error al intentar eliminar el recurso.");
                     }
@@ -923,17 +884,13 @@ function configurarFormularioAgregar() {
             }
         }
 
-       
-        // --------------------------------------------------------
-        // 4. LÓGICA DE DETALLES Y PRÉSTAMOS (Igual que el lector)
-        // --------------------------------------------------------
-function abrirDetalles(id) {
+        function abrirDetalles(id) {
             llenarModalConDatos(id);
-            // ESTO ES CLAVE: Guardamos el ID por si el usuario decide pedirlo prestado desde aquí
             document.getElementById('prestamo-recurso-id').value = id;
             
             document.getElementById('modal-recurso-overlay').style.display = 'flex';
         }
+
         function llenarModalConDatos(id) {
             const recurso = recursos_reales[id];
             if (!recurso) return;
@@ -963,32 +920,25 @@ function abrirDetalles(id) {
         }
 
         let recursoSeleccionadoParaPrestamo = "";
-       // --------------------------------------------------------
-        // LÓGICA DE PRÉSTAMOS
-        // --------------------------------------------------------
         
         function iniciarPrestamo(idRecurso) {
             const recurso = recursos_reales[idRecurso];
             if (!recurso) return;
 
-            // Guardamos el ID del recurso en el campo oculto de la modal
             document.getElementById('prestamo-recurso-id').value = idRecurso;
             document.getElementById('confirm-recurso-title').innerText = recurso.titulo || 'Sin título';
 
-            // Ocultamos la modal de detalles si venimos desde ahí
             const modalDetalles = document.getElementById('modal-recurso-overlay');
             if (modalDetalles) modalDetalles.style.display = 'none';
 
-            // Mostramos la modal de confirmación
             document.getElementById('modal-confirmar-overlay').style.display = 'flex';
         }
 
-function procesarPrestamo() {
+        function procesarPrestamo() {
             const idRecurso = document.getElementById('prestamo-recurso-id').value;
             const tituloRecurso = document.getElementById('confirm-recurso-title').innerText;
             const fechaInput = document.querySelector('.input-fecha').value; 
             
-            // NUEVO: Capturar la contraseña de la ventana modal
             const passwordInput = document.querySelector('.input-password').value;
 
             if(!fechaInput) {
@@ -1000,7 +950,6 @@ function procesarPrestamo() {
                 return;
             }
 
-            // NUEVO: Leer quién está usando la computadora
             const idUsuarioActual = localStorage.getItem('usuarioId');
             if(!idUsuarioActual) {
                 alert("Error: Sesión no válida. Por favor inicia sesión de nuevo.");
@@ -1010,12 +959,11 @@ function procesarPrestamo() {
 
             document.getElementById('modal-confirmar-overlay').style.display = 'none';
 
-            // Armamos el paquete con TODOS los datos reales
             const payload = {
                 idRecurso: idRecurso,
                 fechaDevolucion: fechaInput,
-                idUsuario: idUsuarioActual, // Enviamos el ID real
-                contraseña: passwordInput   // Enviamos la clave ingresada
+                idUsuario: idUsuarioActual, 
+                contraseña: passwordInput   
             };
 
             fetch('/api/prestamos', {
@@ -1030,10 +978,8 @@ function procesarPrestamo() {
                     cargarCatalogoDesdeJava(); 
                     cargarMisPrestamos(); 
                 } else {
-                    // Si falla, mostramos el mensaje exacto que manda Java
                     return respuesta.text().then(text => {
                         document.getElementById('error-recurso-title').innerText = '"' + tituloRecurso + '"';
-                        // Buscamos el div del mensaje de error para cambiar el texto
                         document.querySelector('.error-msg-box').innerText = "Error: " + text;
                         document.getElementById('modal-error-overlay').style.display = 'flex';
                     });
@@ -1046,9 +992,6 @@ function procesarPrestamo() {
             document.getElementById(`modal-${tipo}-overlay`).style.display = 'none';
         }
 
-        // --------------------------------------------------------
-        // 5. NAVEGACIÓN Y CIERRE DE MODALES
-        // --------------------------------------------------------
         function cambiarPestana(pestana) {
             document.getElementById('btn-explorar').classList.remove('active');
             document.getElementById('btn-prestamos').classList.remove('active');
@@ -1070,24 +1013,20 @@ function procesarPrestamo() {
         }
 
         function configurarCierreDeModales() {
-            // Modales
             const overlayAdd = document.getElementById('modal-add-overlay');
             const overlayDetalles = document.getElementById('modal-recurso-overlay');
             
-            // Botones X y Cerrar
             const btnCloseAdd = document.getElementById('btn-close-add');
             const cerrarBtnDetalles = document.getElementById('btn-cerrar-modal-detalles');
 
             if (btnCloseAdd) btnCloseAdd.addEventListener('click', () => overlayAdd.style.display = 'none');
             if (cerrarBtnDetalles) cerrarBtnDetalles.addEventListener('click', () => overlayDetalles.style.display = 'none');
 
-            // Click fuera de las modales
             window.addEventListener('click', (event) => {
                 if (event.target === overlayAdd) overlayAdd.style.display = 'none';
                 if (event.target === overlayDetalles) overlayDetalles.style.display = 'none';
             });
             
-            // Botón solicitar desde detalles
             const btnSolicitarModal = document.querySelector('.btn-solicitar');
             if(btnSolicitarModal) {
                 btnSolicitarModal.addEventListener('click', function() {
@@ -1097,7 +1036,6 @@ function procesarPrestamo() {
             }
         }
 
-        
     </script>
 </body>
 

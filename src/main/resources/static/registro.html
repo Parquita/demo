@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biblioteca Virtual - Registro</title>
     <style>
-        /* ===== ESTILOS GENERALES (Idénticos al Login) ===== */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f19b9c;
@@ -27,7 +26,6 @@
             overflow: hidden;
         }
 
-        /* ===== PANEL IZQUIERDO (AZUL) ===== */
         .left-panel {
             background-color: #c9e4f2;
             width: 45%;
@@ -56,11 +54,9 @@
             color: #333;
         }
 
-        /* ===== PANEL DERECHO (FORMULARIO) ===== */
         .right-panel {
             width: 55%;
             padding: 40px 60px;
-            /* Un poco menos de padding vertical para acomodar más campos */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -87,7 +83,6 @@
             font-size: 14px;
         }
 
-        /* ===== BOTÓN Y ENLACE ===== */
         .btn-submit {
             background-color: #2c5468;
             color: white;
@@ -154,40 +149,36 @@
         </div>
     </div>
 
-<script>
+    <script>
         document.getElementById('registroForm').addEventListener('submit', function (event) {
             event.preventDefault();
 
-            // 1. Capturamos los datos que escribió el usuario
             const usuario = document.getElementById('usuario').value;
             const correo = document.getElementById('correo').value;
             const password = document.getElementById('password').value;
 
-            // 2. Armamos el paquete que enviaremos a Java
             const payload = {
                 usuario: usuario,
                 correo: correo,
-                contraseña: password // Usamos "contraseña" con ñ para que coincida con Java
+                contraseña: password
             };
 
-            // 3. Enviamos la petición a nuestro servidor Spring Boot
             fetch('/api/registro', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             })
-            .then(respuesta => {
-                if (respuesta.ok) {
-                    alert("¡Cuenta creada con éxito! Ahora puedes iniciar sesión.");
-                    window.location.href = "index.html"; // Redirigir al login
-                } else {
-                    // Si la respuesta es mala, leemos el mensaje (ej: "Correo ya registrado")
-                    return respuesta.text().then(text => { throw new Error(text) });
-                }
-            })
-            .catch(error => {
-                alert("Error al registrarse: " + error.message);
-            });
+                .then(respuesta => {
+                    if (respuesta.ok) {
+                        alert("¡Cuenta creada con éxito! Ahora puedes iniciar sesión.");
+                        window.location.href = "index.html";
+                    } else {
+                        return respuesta.text().then(text => { throw new Error(text) });
+                    }
+                })
+                .catch(error => {
+                    alert("Error al registrarse: " + error.message);
+                });
         });
     </script>
 </body>

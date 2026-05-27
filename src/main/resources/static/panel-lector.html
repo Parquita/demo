@@ -6,13 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biblioteca Virtual - Panel Lector</title>
     <style>
-        /* ===== ESTILOS GENERALES Y LAYOUT EXISTENTE ===== */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f19b9c;
-            /* Fondo salmón exterior */
             display: flex;
             height: 100vh;
             overflow: hidden;
@@ -20,7 +18,6 @@
 
         .header {
             background-color: #a6cddf;
-            /* Azul superior */
             height: 60px;
             display: flex;
             align-items: center;
@@ -70,7 +67,6 @@
         .sidebar {
             width: 220px;
             background-color: #c9e4f2;
-            /* Azul lateral */
             height: calc(100vh - 60px);
             padding-top: 20px;
         }
@@ -111,7 +107,6 @@
             display: block;
         }
 
-        /* ===== VISTA: EXPLORAR (CATÁLOGO) ===== */
         .catalogo-title {
             font-size: 20px;
             margin-top: 0;
@@ -183,7 +178,6 @@
             color: #2c5468;
         }
 
-        /* ===== VISTA: MIS PRÉSTAMOS ===== */
         .resumen-prestamos {
             display: flex;
             gap: 15px;
@@ -250,19 +244,15 @@
             cursor: pointer;
         }
 
-        /* ===== NUEVOS ESTILOS: VENTANA MODAL (DETALLES) ===== */
         .modal-overlay {
             display: none;
-            /* Oculta por defecto */
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
-            /* Oscurece el fondo */
             backdrop-filter: blur(5px);
-            /* Efecto borroso detrás de la modal */
             justify-content: center;
             align-items: center;
             z-index: 1000;
@@ -276,12 +266,10 @@
             overflow: hidden;
             box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.3);
             border: 2px solid #558296;
-            /* Borde azul consistente */
         }
 
         .modal-header {
             background-color: #e0e0e0;
-            /* Gris claro de la imagen */
             padding: 10px;
             text-align: center;
             font-size: 14px;
@@ -330,7 +318,6 @@
             font-size: 14px;
         }
 
-        /* Estilos dinámicos para campos de Libro vs Revista */
         .modal-fields-area {
             margin: 15px 0;
             display: flex;
@@ -362,9 +349,7 @@
 
         #modal-status-badge {
             background-color: #b2f2bb;
-            /* Fondo verde claro */
             color: #1e3a48;
-            /* Texto azul oscuro */
             padding: 5px 15px;
             border-radius: 15px;
             font-weight: bold;
@@ -396,7 +381,6 @@
             color: #2c5468;
         }
 
-        /* ===== MODALES DE PRÉSTAMO (Confirmar, Éxito, Error) ===== */
         .modal-action-overlay {
             display: none;
             position: fixed;
@@ -481,7 +465,6 @@
             color: white;
         }
 
-        /* Estilos específicos Error */
         .modal-error-title {
             color: #d32f2f;
         }
@@ -502,7 +485,6 @@
             font-weight: bold;
         }
 
-        /* Estilos específicos Éxito */
         .success-icon {
             font-size: 60px;
             color: #4CAF50;
@@ -511,13 +493,16 @@
     </style>
 </head>
 
-<div id="modal-confirmar-overlay" class="modal-action-overlay">
+<body>
+
+    <div id="modal-confirmar-overlay" class="modal-action-overlay">
         <div class="modal-action-content">
             <div class="modal-action-title">CONFIRMAR PRÉSTAMO</div>
-            
+
             <input type="hidden" id="prestamo-recurso-id" value="">
-            
-            <div class="modal-action-text">Estas solicitando: <span id="confirm-recurso-title" style="font-weight: bold;">Manual de Java</span></div>
+
+            <div class="modal-action-text">Estas solicitando: <span id="confirm-recurso-title"
+                    style="font-weight: bold;">Manual de Java</span></div>
             <input type="date" class="input-fecha" placeholder="Fecha de devolución: (DD/MM/AA)" required>
             <input type="password" class="input-password" placeholder="Contraseña" required>
             <div class="btn-action-group">
@@ -527,35 +512,34 @@
         </div>
     </div>
 
-<div id="modal-exito-overlay" class="modal-action-overlay">
-    <div class="modal-action-content">
-        <div class="modal-action-title">¡PRÉSTAMO REALIZADO CON ÉXITO!</div>
-        <div class="success-icon">✅</div>
-        <div class="modal-action-text">Has prestado <span id="success-recurso-title" style="font-weight: bold;">"Manual
-                de Java"</span></div>
-        <button class="btn-action btn-confirm" onclick="cerrarModalAction('exito')">CERRAR</button>
+    <div id="modal-exito-overlay" class="modal-action-overlay">
+        <div class="modal-action-content">
+            <div class="modal-action-title">¡PRÉSTAMO REALIZADO CON ÉXITO!</div>
+            <div class="success-icon">✅</div>
+            <div class="modal-action-text">Has prestado <span id="success-recurso-title"
+                    style="font-weight: bold;">"Manual
+                    de Java"</span></div>
+            <button class="btn-action btn-confirm" onclick="cerrarModalAction('exito')">CERRAR</button>
+        </div>
     </div>
-</div>
 
-<div id="modal-error-overlay" class="modal-action-overlay">
-    <div class="modal-action-content">
-        <div class="modal-action-title modal-error-title">¡ERROR AL PROCESAR EL PRÉSTAMO!</div>
-        <div class="error-icon">⚠️</div>
-        <div class="modal-action-text">Has intentado solicitar <span id="error-recurso-title"
-                style="font-weight: bold;">"Manual de Java"</span></div>
-        <div class="error-msg-box">Error: El recurso no se encuentra disponible (Sin copias en stock)</div>
-        <button class="btn-action btn-confirm" onclick="cerrarModalAction('error')">CERRAR</button>
+    <div id="modal-error-overlay" class="modal-action-overlay">
+        <div class="modal-action-content">
+            <div class="modal-action-title modal-error-title">¡ERROR AL PROCESAR EL PRÉSTAMO!</div>
+            <div class="error-icon">⚠️</div>
+            <div class="modal-action-text">Has intentado solicitar <span id="error-recurso-title"
+                    style="font-weight: bold;">"Manual de Java"</span></div>
+            <div class="error-msg-box">Error: El recurso no se encuentra disponible (Sin copias en stock)</div>
+            <button class="btn-action btn-confirm" onclick="cerrarModalAction('error')">CERRAR</button>
+        </div>
     </div>
-</div>
-
-<body>
 
     <header class="header">
         <div class="header-title">BIBLIOTECA VIRTUAL</div>
         <div class="search-bar">
             <input type="text" placeholder="🔍 Buscar recurso...">
         </div>
-<div class="user-info" id="etiqueta-usuario">👤 Hola, Usuario</div>
+        <div class="user-info" id="etiqueta-usuario">👤 Hola, Usuario</div>
     </header>
 
     <div class="main-container">
@@ -569,7 +553,7 @@
             <div id="vista-explorar" class="tab-content active">
                 <h2 class="catalogo-title">Nuestro catálogo</h2>
                 <div class="grid-catalogo" id="contenedor-catalogo">
-                    </div>
+                </div>
             </div>
 
             <div id="vista-prestamos" class="tab-content">
@@ -613,7 +597,7 @@
             </div>
 
         </main>
-    </div> 
+    </div>
 
     <div id="modal-recurso-overlay" class="modal-overlay">
         <div class="modal-content">
@@ -655,10 +639,9 @@
         </div>
     </div>
 
-    <script>// Variable global para guardar los recursos reales
+    <script>
         let recursos_reales = {};
 
-// 1. Esto arranca en cuanto la página carga
         document.addEventListener('DOMContentLoaded', function () {
             const nombreUsuario = localStorage.getItem('usuarioNombre');
             const etiquetaUsuario = document.getElementById('etiqueta-usuario');
@@ -668,11 +651,10 @@
                 window.location.href = "index.html";
             }
 
-            // AHORA SOLO LLAMAMOS AL CATÁLOGO AL INICIAR
-            cargarCatalogoDesdeJava(); 
+            cargarCatalogoDesdeJava();
             configurarCierreDeModales();
         });
-        // 2. Función para cargar el catálogo
+
         function cargarCatalogoDesdeJava() {
             fetch('/api/recursos')
                 .then(respuesta => {
@@ -691,8 +673,7 @@
 
                         let tipoRecurso = (recurso.edicion !== undefined || recurso.numeroPaginas === undefined) ? 'revista' : 'libro';
                         const recursoId = recurso.id;
-                        
-                        // CORRECCIÓN 1: Enviar el recursoId al botón Prestar en lugar del título
+
                         const tarjeta = `
                             <div class="tarjeta-libro" data-id="${recursoId}" data-type="${tipoRecurso}">
                                 <div class="imagen-placeholder">🖼️</div>
@@ -708,7 +689,7 @@
                     });
                     cargarMisPrestamos();
                 })
-                
+
                 .catch(error => {
                     console.error("Error conectando al servidor:", error);
                     const contenedor = document.getElementById('contenedor-catalogo');
@@ -718,21 +699,17 @@
                 });
         }
 
-        // 3. Cargar Mis Préstamos
         function cargarMisPrestamos() {
-            // 1. Buscamos quién es el usuario actual
             const idUsuario = localStorage.getItem('usuarioId');
-            
-            // Si no hay usuario logueado, detenemos la función
+
             if (!idUsuario) return;
 
-            // 2. Le enviamos el ID a Java usando la URL (?idUsuario=...)
             fetch('/api/prestamos/mis-prestamos?idUsuario=' + idUsuario)
                 .then(res => res.json())
                 .then(prestamos => {
                     const tbody = document.querySelector('#vista-prestamos tbody');
                     if (!tbody) return;
-                    tbody.innerHTML = ''; 
+                    tbody.innerHTML = '';
 
                     let totalPrestados = 0;
 
@@ -759,33 +736,31 @@
                     });
 
                     const badges = document.querySelectorAll('#vista-prestamos .badge-resumen');
-                    if(badges.length > 0) {
+                    if (badges.length > 0) {
                         badges[0].innerText = `TOTAL RECURSOS PRESTADOS: ${totalPrestados}`;
                     }
                 })
                 .catch(err => console.error("Error cargando préstamos:", err));
         }
 
-        // 4. Devolver Recurso
         function devolverRecurso(idPrestamo) {
-            if(confirm("¿Confirmas la devolución de este recurso?")) {
+            if (confirm("¿Confirmas la devolución de este recurso?")) {
                 fetch('/api/prestamos/' + idPrestamo + '/devolver', {
                     method: 'PUT'
                 })
-                .then(respuesta => {
-                    if (respuesta.ok) {
-                        alert("¡Recurso devuelto con éxito!");
-                        cargarCatalogoDesdeJava(); 
-                        cargarMisPrestamos(); 
-                    } else {
-                        alert("Error al procesar la devolución.");
-                    }
-                })
-                .catch(error => console.error("Error:", error));
+                    .then(respuesta => {
+                        if (respuesta.ok) {
+                            alert("¡Recurso devuelto con éxito!");
+                            cargarCatalogoDesdeJava();
+                            cargarMisPrestamos();
+                        } else {
+                            alert("Error al procesar la devolución.");
+                        }
+                    })
+                    .catch(error => console.error("Error:", error));
             }
         }
 
-        // 5. Detalles del recurso
         function abrirDetalles(id) {
             llenarModalConDatos(id);
             document.getElementById('prestamo-recurso-id').value = id;
@@ -800,7 +775,7 @@
             document.getElementById('modal-autor').innerHTML = 'Autor: ' + (recurso.autor || 'Desconocido');
             document.getElementById('modal-editorial').innerHTML = 'Editorial: ' + (recurso.editorial || 'N/A');
             document.getElementById('modal-genero').innerHTML = 'Género: ' + (recurso.genero || 'N/A');
-            
+
             const disponibles = recurso.copiasDisponibles !== undefined ? recurso.copiasDisponibles : 0;
             const totales = recurso.copias !== undefined ? recurso.copias : 0;
             document.getElementById('modal-status-badge').innerHTML = `DISPONIBLE: ${disponibles} de ${totales} copias`;
@@ -820,7 +795,6 @@
             }
         }
 
-        // 6. Lógica de Pestañas
         function cambiarPestana(pestana) {
             document.getElementById('btn-explorar').classList.remove('active');
             document.getElementById('btn-prestamos').classList.remove('active');
@@ -836,8 +810,6 @@
             }
         }
 
-        // 7. Lógica de Préstamos
-        // CORRECCIÓN 2: Ahora recibe el ID, busca el nombre correcto y llena el campo oculto
         function iniciarPrestamo(idRecurso) {
             if (!idRecurso || idRecurso === 'undefined') {
                 alert("Error: ID del recurso no detectado.");
@@ -862,23 +834,21 @@
         function procesarPrestamo() {
             const idRecurso = document.getElementById('prestamo-recurso-id').value;
             const tituloRecurso = document.getElementById('confirm-recurso-title').innerText;
-            const fechaInput = document.querySelector('.input-fecha').value; 
-            
-            // NUEVO: Capturar la contraseña de la ventana modal
+            const fechaInput = document.querySelector('.input-fecha').value;
+
             const passwordInput = document.querySelector('.input-password').value;
 
-            if(!fechaInput) {
+            if (!fechaInput) {
                 alert("Por favor, selecciona una fecha de devolución.");
                 return;
             }
-            if(!passwordInput) {
+            if (!passwordInput) {
                 alert("Por favor, ingresa tu contraseña para confirmar.");
                 return;
             }
 
-            // NUEVO: Leer quién está usando la computadora
             const idUsuarioActual = localStorage.getItem('usuarioId');
-            if(!idUsuarioActual) {
+            if (!idUsuarioActual) {
                 alert("Error: Sesión no válida. Por favor inicia sesión de nuevo.");
                 window.location.href = "index.html";
                 return;
@@ -886,12 +856,11 @@
 
             document.getElementById('modal-confirmar-overlay').style.display = 'none';
 
-            // Armamos el paquete con TODOS los datos reales
             const payload = {
                 idRecurso: idRecurso,
                 fechaDevolucion: fechaInput,
-                idUsuario: idUsuarioActual, // Enviamos el ID real
-                contraseña: passwordInput   // Enviamos la clave ingresada
+                idUsuario: idUsuarioActual,
+                contraseña: passwordInput
             };
 
             fetch('/api/prestamos', {
@@ -899,30 +868,27 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             })
-            .then(respuesta => {
-                if (respuesta.ok) {
-                    document.getElementById('success-recurso-title').innerText = '"' + tituloRecurso + '"';
-                    document.getElementById('modal-exito-overlay').style.display = 'flex';
-                    cargarCatalogoDesdeJava(); 
-                    cargarMisPrestamos(); 
-                } else {
-                    // Si falla, mostramos el mensaje exacto que manda Java
-                    return respuesta.text().then(text => {
-                        document.getElementById('error-recurso-title').innerText = '"' + tituloRecurso + '"';
-                        // Buscamos el div del mensaje de error para cambiar el texto
-                        document.querySelector('.error-msg-box').innerText = "Error: " + text;
-                        document.getElementById('modal-error-overlay').style.display = 'flex';
-                    });
-                }
-            })
-            .catch(error => console.error("Error:", error));
+                .then(respuesta => {
+                    if (respuesta.ok) {
+                        document.getElementById('success-recurso-title').innerText = '"' + tituloRecurso + '"';
+                        document.getElementById('modal-exito-overlay').style.display = 'flex';
+                        cargarCatalogoDesdeJava();
+                        cargarMisPrestamos();
+                    } else {
+                        return respuesta.text().then(text => {
+                            document.getElementById('error-recurso-title').innerText = '"' + tituloRecurso + '"';
+                            document.querySelector('.error-msg-box').innerText = "Error: " + text;
+                            document.getElementById('modal-error-overlay').style.display = 'flex';
+                        });
+                    }
+                })
+                .catch(error => console.error("Error:", error));
         }
 
         function cerrarModalAction(tipo) {
             document.getElementById(`modal-${tipo}-overlay`).style.display = 'none';
         }
 
-        // 8. Configurar el cierre general de las modales
         function configurarCierreDeModales() {
             const overlayDetalles = document.getElementById('modal-recurso-overlay');
             const cerrarBtnDetalles = document.getElementById('btn-cerrar-modal');
@@ -936,15 +902,15 @@
                 });
             }
 
-            // CORRECCIÓN 3: Leer el ID del campo oculto en lugar de intentar leer el título HTML
             const btnSolicitarModal = document.querySelector('.btn-solicitar');
-            if(btnSolicitarModal) {
-                btnSolicitarModal.addEventListener('click', function() {
+            if (btnSolicitarModal) {
+                btnSolicitarModal.addEventListener('click', function () {
                     const idRecurso = document.getElementById('prestamo-recurso-id').value;
                     iniciarPrestamo(idRecurso);
                 });
             }
-        }</script>
+        }
+    </script>
 </body>
 
 </html>

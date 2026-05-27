@@ -10,7 +10,6 @@ public class Prestamo {
     private String fechaDevolucion;
     private boolean devuelto;
 
-    // Constructor original (para compatibilidad)
     public Prestamo(int id, Usuario usuario, Recurso recurso, String fechaDevolucion) {
         this.id = id;
         this.usuario = usuario;
@@ -21,7 +20,6 @@ public class Prestamo {
         this.devuelto = false;
     }
 
-    // Constructor nuevo (para usar con IDs de BD)
     public Prestamo(int id, int usuarioId, int recursoId, String fechaDevolucion) {
         this.id = id;
         this.usuarioId = usuarioId;

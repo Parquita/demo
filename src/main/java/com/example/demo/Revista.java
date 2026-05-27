@@ -8,7 +8,6 @@ public class Revista extends Recurso {
         this.edicion = edicion;
     }
 
-    // Spring Boot necesita este método exacto para enviarlo como JSON
     @Override
     public Integer getEdicion() {
         return edicion;
