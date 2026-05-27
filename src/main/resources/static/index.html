@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca Virtual - Login</title>
+    <style>
+        /* ===== ESTILOS GENERALES ===== */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f19b9c;
+            /* Fondo rosa/salmón de la imagen */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* ===== CONTENEDOR PRINCIPAL ===== */
+        .login-container {
+            display: flex;
+            width: 750px;
+            height: 450px;
+            background-color: white;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* ===== PANEL IZQUIERDO (AZUL) ===== */
+        .left-panel {
+            background-color: #c9e4f2;
+            /* Azul claro */
+            width: 45%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .left-panel img {
+            width: 150px;
+            margin-bottom: 20px;
+        }
+
+        .left-panel h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #000;
+        }
+
+        .left-panel p {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* ===== PANEL DERECHO (FORMULARIO) ===== */
+        .right-panel {
+            width: 55%;
+            padding: 50px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .right-panel h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 22px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group input[type="email"],
+        .input-group input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            /* Bordes redondeados como en la imagen */
+            box-sizing: border-box;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .role-group {
+            margin-bottom: 25px;
+        }
+
+        .role-group p {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .radio-options {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+
+        /* ===== BOTÓN INICIAR SESIÓN ===== */
+        .btn-submit {
+            background-color: #2c5468;
+            /* Azul oscuro/verdoso */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: #1e3a48;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container">
+        <div class="left-panel">
+            <div style="font-size: 100px; margin-bottom: 10px;">📚</div>
+            <h1>BIBLIOTECA<br>VIRTUAL</h1>
+            <p>Acceso al conocimiento</p>
+        </div>
+
+        <div class="right-panel">
+            <h2>INGRESAR</h2>
+            <form id="loginForm">
+                <div class="input-group">
+                    <input type="email" id="correo" placeholder="Correo electrónico" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="password" placeholder="Contraseña" required>
+                </div>
+
+                <button type="submit" class="btn-submit">INICIAR SESIÓN</button>
+                <p style="text-align: center; margin-top: 20px; font-size: 13px; color: #555;">
+                    ¿No tienes cuenta? <a href="registro.html"
+                        style="color: #2c5468; text-decoration: none; font-weight: bold;">Regístrate aquí</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+<script>
+        document.getElementById('loginForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            
+            // 1. Capturamos los datos
+            const correo = document.getElementById('correo').value;
+            const password = document.getElementById('password').value;
+            
+            // Ya no necesitamos capturar el tipo de usuario del HTML
+
+            const payload = {
+                correo: correo,
+                contraseña: password
+            };
+
+            // 2. Hablamos con Java
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(respuesta => {
+                if (respuesta.ok) {
+                    return respuesta.json(); // Si el login es correcto, Java nos devuelve los datos del usuario
+                } else {
+                    throw new Error("Correo o contraseña incorrectos");
+                }
+            })
+            .then(datosUsuario => {
+                // LOGIN EXITOSO
+                localStorage.setItem('usuarioId', datosUsuario.id);
+                localStorage.setItem('usuarioNombre', datosUsuario.usuario);
+                
+                alert("¡Bienvenido, " + datosUsuario.usuario + "!");
+
+                // ==========================================
+                // 3. MAGIA DEL ADMINISTRADOR
+                // ==========================================
+                
+                // Pon aquí el correo EXACTO que usarás para el bibliotecario
+                const correoAdministrador = "laparca446@gmail.com"; 
+
+                // Si el correo que entró coincide con el del administrador...
+                if (datosUsuario.correo === correoAdministrador) {
+                    window.location.href = "panel-lector-admin.html"; // Lo mandamos al panel de control
+                } else {
+                    window.location.href = "panel-lector.html"; // Cualquier otro va al panel normal
+                }
+
+            })
+            .catch(error => {
+                alert(error.message);
+                document.getElementById('password').value = "";
+            });
+        });
+    </script>
+</body>
+
+</html>

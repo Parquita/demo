@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca Virtual - Panel Bibliotecario</title>
+    <style>
+        /* ===== ESTILOS GENERALES Y LAYOUT EXISTENTE ===== */
+        /* (Estos son los mismos estilos base que usamos en panel-lector.html) */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f19b9c;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #a6cddf;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+        }
+
+        .header-title {
+            font-weight: bold;
+            font-size: 18px;
+            width: 200px;
+        }
+
+        .search-bar {
+            flex-grow: 1;
+            margin: 0 40px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 8px 15px 8px 35px;
+            border: none;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .main-container {
+            display: flex;
+            width: 100%;
+            margin-top: 60px;
+            background-color: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar {
+            width: 220px;
+            background-color: #c9e4f2;
+            height: calc(100vh - 60px);
+            padding-top: 20px;
+        }
+
+        .nav-item {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #333;
+            transition: background 0.3s;
+        }
+
+        .nav-item:hover {
+            background-color: #a6cddf;
+        }
+
+        .nav-item.active {
+            background-color: #a6cddf;
+            border-left: 4px solid #2c5468;
+        }
+
+        .content-area {
+            flex-grow: 1;
+            padding: 30px;
+            overflow-y: auto;
+            height: calc(100vh - 60px);
+            box-sizing: border-box;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Vistas Explorar y Préstamos (Simplificadas para el ejemplo) */
+        .catalogo-title {
+            font-size: 20px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .grid-catalogo {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .tarjeta-libro {
+            border: 2px solid #a6cddf;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .imagen-placeholder {
+            width: 100%;
+            height: 120px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            color: #666;
+        }
+
+        .libro-titulo {
+            color: #2c5468;
+            font-weight: 600;
+            font-size: 15px;
+            margin: 0 0 5px 0;
+        }
+
+        .libro-autor {
+            color: #555;
+            font-size: 13px;
+            margin: 0 0 15px 0;
+        }
+
+        .botones-tarjeta {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .btn-accion {
+            flex: 1;
+            padding: 6px 0;
+            border: none;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .btn-detalles {
+            background-color: #a6cddf;
+            color: #2c5468;
+        }
+
+        .btn-prestar {
+            background-color: #a6cddf;
+            color: #2c5468;
+        }
+
+        /* ===== VISTA: PANEL DE CONTROL ===== */
+        .resumen-control {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .badge-control {
+            background-color: #e0e0e0;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .subtitulo-control {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .tabla-control {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .tabla-control th {
+            color: #1e3a48;
+            border-bottom: 2px solid #1e3a48;
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        .tabla-control td {
+            border-bottom: 1px solid #ccc;
+            border-right: 1px solid #1e3a48;
+            padding: 15px;
+            vertical-align: middle;
+        }
+
+        .tabla-control td:last-child {
+            border-right: none;
+        }
+
+        .info-recurso-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-align: left;
+        }
+
+        .mini-imagen {
+            width: 60px;
+            height: 60px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .texto-recurso {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .titulo-recurso-tabla {
+            font-weight: bold;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .autor-recurso-tabla {
+            font-size: 12px;
+            color: #555;
+            margin: 0;
+        }
+
+        .btn-gestion {
+            background-color: #558296;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 15px;
+            font-weight: bold;
+            cursor: pointer;
+            display: block;
+            width: 100px;
+            margin: 5px auto;
+            font-size: 12px;
+        }
+
+        .btn-agregar-contenedor {
+            display: flex;
+            justify-content: center;
+        }
+
+        .btn-agregar {
+            background-color: #2c5468;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 25px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ===== NUEVA MODAL: AÑADIR RECURSO ===== */
+        .modal-add-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px);
+            justify-content: center; align-items: center; z-index: 1000;
+        }
+
+        .modal-add-content {
+            background-color: white; width: 600px; max-width: 90%; border-radius: 15px; overflow: hidden;
+            box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.3); border: 2px solid #558296;
+        }
+
+        .modal-add-header {
+            background-color: #2c5468; color: white; padding: 15px; text-align: center; font-size: 16px; font-weight: bold; position: relative;
+        }
+
+        .btn-close-x {
+            position: absolute; right: 15px; top: 15px; color: white; cursor: pointer; font-size: 18px; font-weight: bold; background: none; border: none;
+        }
+
+        .modal-add-body { padding: 20px 30px; display: flex; gap: 20px; }
+
+        .form-add-left { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .input-add { width: 100%; padding: 8px 15px; border: 1px solid #ccc; border-radius: 20px; box-sizing: border-box; outline: none; font-size: 14px; font-weight: bold; color: #2c5468; }
+        .input-add::placeholder { color: #2c5468; font-weight: bold; }
+
+        .radio-group-add { display: flex; align-items: center; gap: 15px; margin-top: 10px; font-size: 14px; font-weight: bold; color: #2c5468; }
+        .radio-group-add label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+
+        .form-add-right { width: 180px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        .upload-placeholder { width: 150px; height: 150px; border: 2px dashed #a6cddf; border-radius: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #2c5468; font-weight: bold; cursor: pointer; }
+        .upload-icon { font-size: 40px; margin-bottom: 5px; }
+
+        .btn-add-submit { background-color: #2c5468; color: white; border: none; border-radius: 8px; padding: 10px 40px; font-weight: bold; cursor: pointer; font-size: 14px; margin: 20px auto 10px; display: block; }
+
+        /* ===== MODALES DE PRÉSTAMO (Confirmar, Éxito, Error) ===== */
+        .modal-action-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px);
+            justify-content: center; align-items: center; z-index: 1000;
+        }
+
+        .modal-action-content {
+            background-color: white; width: 450px; border-radius: 20px; padding: 30px; text-align: center;
+            box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-action-title { font-size: 20px; font-weight: bold; color: #001f3f; margin-bottom: 15px; text-transform: uppercase; }
+        .modal-action-text { font-size: 14px; margin-bottom: 20px; color: #333; }
+        
+        .input-fecha { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 20px; box-sizing: border-box; outline: none; margin-bottom: 10px; font-size: 14px;}
+        .input-password { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 20px; box-sizing: border-box; outline: none; margin-bottom: 20px; font-size: 14px;}
+
+        .btn-action-group { display: flex; justify-content: center; gap: 15px; }
+        .btn-action { border: none; border-radius: 20px; padding: 12px 30px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-cancel { background-color: #e0e0e0; color: #000; }
+        .btn-confirm { background-color: #558296; color: white; }
+
+        /* Estilos específicos Error */
+        .modal-error-title { color: #d32f2f; }
+        .error-icon { font-size: 60px; color: #d32f2f; margin: 10px 0; }
+        .error-msg-box { background-color: #ffcdd2; color: #b71c1c; padding: 10px; border-radius: 20px; margin: 15px 0; font-size: 12px; font-weight: bold;}
+
+        /* Estilos específicos Éxito */
+        .success-icon { font-size: 60px; color: #4CAF50; margin: 10px 0; }
+    </style>
+</head>
+
+<div id="modal-add-overlay" class="modal-add-overlay">
+        <div class="modal-add-content">
+            <div class="modal-add-header">
+                AÑADIR NUEVO RECURSO
+                
+                <button id="btn-close-add" class="btn-close-x">✕</button>
+            </div>
+            <form id="form-add-recurso">
+                <input type="hidden" id="edit-recurso-id" value="">
+                <div class="modal-add-body">
+                    <div class="form-add-left">
+                        <input type="text" id="add-titulo" class="input-add" placeholder="Título" required>
+                        <input type="text" id="add-autor" class="input-add" placeholder="Autor" required>
+                        <input type="text" id="add-editorial" class="input-add" placeholder="Editorial" required>
+                        <input type="text" id="add-genero" class="input-add" placeholder="Género" required>
+                        
+                        <div class="radio-group-add">
+                            <span>Tipo de recurso</span>
+                            <label><input type="radio" name="tipoNuevo" value="libro" checked> Libro</label>
+                            <label><input type="radio" name="tipoNuevo" value="revista"> Revista</label>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <input type="number" id="add-copias" class="input-add" placeholder="No. de copias" style="width: 50%;" required>
+                            <input type="number" id="input-especifico" class="input-add" placeholder="No. Páginas" style="width: 50%;" required>
+                        </div>
+                    </div>
+                    <div class="form-add-right">
+                        <div class="upload-placeholder">
+                            <div class="upload-icon">📷</div>
+                            <span>Subir portada</span>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-add-submit">AGREGAR</button>
+            </form>
+        </div>
+    </div>
+<div id="modal-confirmar-overlay" class="modal-action-overlay">
+        <div class="modal-action-content">
+            <div class="modal-action-title">CONFIRMAR PRÉSTAMO</div>
+            
+            <input type="hidden" id="prestamo-recurso-id" value="">
+            
+            <div class="modal-action-text">Estas solicitando: <span id="confirm-recurso-title" style="font-weight: bold;">Manual de Java</span></div>
+            <input type="date" class="input-fecha" placeholder="Fecha de devolución: (DD/MM/AA)" required>
+            <input type="password" class="input-password" placeholder="Contraseña" required>
+            <div class="btn-action-group">
+                <button class="btn-action btn-cancel" onclick="cerrarModalAction('confirmar')">CANCELAR</button>
+                <button class="btn-action btn-confirm" onclick="procesarPrestamo()">CONFIRMAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-exito-overlay" class="modal-action-overlay">
+        <div class="modal-action-content">
+            <div class="modal-action-title">¡PRÉSTAMO REALIZADO CON ÉXITO!</div>
+            <div class="success-icon">✅</div>
+            <div class="modal-action-text">Has prestado <span id="success-recurso-title" style="font-weight: bold;">"Manual de Java"</span></div>
+            <button class="btn-action btn-confirm" onclick="cerrarModalAction('exito')">CERRAR</button>
+        </div>
+    </div>
+
+    <div id="modal-error-overlay" class="modal-action-overlay">
+        <div class="modal-action-content">
+            <div class="modal-action-title modal-error-title">¡ERROR AL PROCESAR EL PRÉSTAMO!</div>
+            <div class="error-icon">⚠️</div>
+            <div class="modal-action-text">Has intentado solicitar <span id="error-recurso-title" style="font-weight: bold;">"Manual de Java"</span></div>
+            <div class="error-msg-box">Error: El recurso no se encuentra disponible (Sin copias en stock)</div>
+            <button class="btn-action btn-confirm" onclick="cerrarModalAction('error')">CERRAR</button>
+        </div>
+    </div>
+
+    <div id="modal-recurso-overlay" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 1000;">
+        <div class="modal-content" style="background-color: white; width: 700px; max-width: 90%; border-radius: 15px; overflow: hidden; box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.3); border: 2px solid #558296;">
+            <div class="modal-header" style="background-color: #e0e0e0; padding: 10px; text-align: center; font-size: 14px; font-weight: 500; color: #333;">DETALLES DEL RECURSO</div>
+            <div class="modal-body" style="display: flex; padding: 20px 40px;">
+                <div class="modal-left" style="width: 40%; display: flex; justify-content: center; align-items: center;">
+                    <div class="modal-image-placeholder" style="width: 100%; height: 250px; border: 1px solid #333; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 80px; color: #666;">🖼️</div>
+                </div>
+                <div class="modal-right" style="width: 60%; padding-left: 30px;">
+                    <h2 id="modal-titulo" style="margin: 0 0 5px 0; color: #2c5468; font-size: 24px;">Nombre del recurso</h2>
+                    <p id="modal-autor" style="margin: 5px 0; color: #555; font-size: 14px;">Autor: Pepe</p>
+                    <p id="modal-editorial" style="margin: 5px 0; color: #555; font-size: 14px;">Editorial: Tech learning</p>
+                    <p id="modal-genero" style="margin: 5px 0; color: #555; font-size: 14px;">Género: EDUCACIÓN / PROGRAMACIÓN</p>
+                    
+                    <div class="modal-fields-area" style="margin: 15px 0; display: flex; flex-direction: column; gap: 10px;">
+                        <div class="field-group" style="display: flex; gap: 20px; font-size: 14px; color: #333; align-items: center;">
+                            <div class="field-item" style="display: flex; align-items: center; gap: 8px;">
+                                <span id="modal-especifico-icon" style="font-size: 20px;">📖</span> 
+                                <span id="modal-especifico-label">Páginas:</span> 
+                                <span id="modal-especifico-valor">321</span>
+                            </div>
+                            <div class="field-item" style="display: flex; align-items: center; gap: 8px;">
+                                <span id="modal-tipo-icon" style="font-size: 20px;">📖</span> 
+                                Tipo:<span id="modal-tipo">Libro</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-status" style="margin: 15px 0;">
+                        <span id="modal-status-badge" style="background-color: #b2f2bb; color: #1e3a48; padding: 5px 15px; border-radius: 15px; font-weight: bold; font-size: 12px;">DISPONIBLE: 3 de 5 copias</span>
+                    </div>
+
+                    <div class="modal-buttons" style="display: flex; gap: 15px; margin-top: 25px;">
+<button class="btn-modal btn-solicitar" onclick="iniciarPrestamo(document.getElementById('prestamo-recurso-id').value)">SOLICITAR PRÉSTAMO</button>
+                        <button id="btn-cerrar-modal-detalles" style="border: none; border-radius: 20px; padding: 10px 25px; font-weight: bold; cursor: pointer; font-size: 13px; background-color: #a6cddf; color: #2c5468;">CERRAR</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<body>
+
+    <header class="header">
+        <div class="header-title">BIBLIOTECA VIRTUAL</div>
+        <div class="search-bar">
+            <input type="text" placeholder="🔍 Buscar recurso...">
+        </div>
+        <div class="user-info">👤 Hola, Bibliotecario</div>
+    </header>
+
+    <div class="main-container">
+        <nav class="sidebar">
+            <div class="nav-item active" id="btn-explorar" onclick="cambiarPestana('explorar')">📖 Explorar</div>
+            <div class="nav-item" id="btn-prestamos" onclick="cambiarPestana('prestamos')">📚 Mis préstamos</div>
+            <div class="nav-item" id="btn-control" onclick="cambiarPestana('control')">🔧 Panel de control</div>
+        </nav>
+
+        <main class="content-area">
+
+            <div id="vista-explorar" class="tab-content active">
+                <h2 class="catalogo-title">Nuestro catálogo</h2>
+                <div class="grid-catalogo" id="contenedor-catalogo">
+                    <div class="tarjeta-libro" data-id="1" data-type="libro">
+                        <div class="imagen-placeholder">🖼️</div>
+                        <p class="libro-titulo">Manual de Java para principiantes</p>
+                        <p class="libro-autor">Autor: Alejandro Perez</p>
+                        <div class="botones-tarjeta">
+                            <button class="btn-accion btn-detalles">Detalles</button>
+                            <button class="btn-accion btn-prestar">Prestar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+<div id="vista-prestamos" class="tab-content">
+                <h2 class="catalogo-title">Todos los Préstamos Activos</h2>
+                
+                <div class="resumen-prestamos" style="margin-bottom: 20px;">
+                    <div class="badge-resumen" style="display: inline-block; background-color: #e0e0e0; padding: 10px 15px; border-radius: 5px; font-weight: bold; font-size: 14px;">TOTAL RECURSOS PRESTADOS: 0</div>
+                </div>
+
+                <table class="tabla-control"> 
+                    <thead>
+                        <tr>
+                            <th>RECURSO</th>
+                            <th>AUTOR</th>
+                            <th>FECHA DEVOLUCIÓN</th>
+                            <th>ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpo-tabla-prestamos-admin">
+                        </tbody>
+                </table>
+            </div>
+            <div id="vista-control" class="tab-content">
+                <h2 class="catalogo-title">Panel de control</h2>
+
+<div class="resumen-control">
+    <div class="badge-control" id="badge-total">TOTAL RECURSOS REGISTRADOS: 0</div>
+    <div class="badge-control" id="badge-prestamos">PRÉSTAMOS ACTIVOS: 0</div>
+</div>
+
+                <div class="subtitulo-control">Gestión de recursos:</div>
+
+                <table class="tabla-control">
+                    <thead>
+                        <tr>
+                            <th>RECURSO<br><span style="font-size: 11px; font-weight: normal;">(TÍTULO/AUTOR)</span>
+                            </th>
+                            <th>EDITORIAL</th>
+                            <th>TIPO</th>
+                            <th>COPIAS</th>
+                            <th>ESTADO</th>
+                            <th>ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpo-tabla-control">
+                        <tr>
+                            <td>
+                                <div class="info-recurso-control">
+                                    <div class="mini-imagen">🖼️</div>
+                                    <div class="texto-recurso">
+                                        <p class="titulo-recurso-tabla">Manual de Java para principiantes</p>
+                                        <p class="autor-recurso-tabla">Autor: Alejandro Perez</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Tech learning</td>
+                            <td>Libro</td>
+                            <td>5</td>
+                            <td>Disponible</td>
+                            <td>
+                                <button class="btn-gestion">EDITAR</button>
+                                <button class="btn-gestion">ELIMINAR</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="info-recurso-control">
+                                    <div class="mini-imagen">🖼️</div>
+                                    <div class="texto-recurso">
+                                        <p class="titulo-recurso-tabla">Aprende Java en 30 días</p>
+                                        <p class="autor-recurso-tabla">Autor: Alejandro Perez</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Tech learning</td>
+                            <td>Revista</td>
+                            <td>5</td>
+                            <td>Disponible</td>
+                            <td>
+                                <button class="btn-gestion">EDITAR</button>
+                                <button class="btn-gestion">ELIMINAR</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="btn-agregar-contenedor">
+                    <button class="btn-agregar">➕ AGREGAR NUEVO RECURSO</button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+// --------------------------------------------------------
+        // 1. VARIABLES GLOBALES Y ARRANQUE
+        // --------------------------------------------------------
+        let recursos_reales = {};
+        let idRecursoEditando = null;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            cargarCatalogoYTablaDesdeJava();
+            configurarCierreDeModales();
+            configurarFormularioAgregar();
+        });
+
+        // --------------------------------------------------------
+        // 2. CARGAR DATOS DESDE JAVA (SUPABASE)
+        // --------------------------------------------------------
+function cargarCatalogoYTablaDesdeJava() {
+            fetch('/api/recursos')
+                .then(respuesta => {
+                    if (!respuesta.ok) throw new Error("Error: " + respuesta.status);
+                    return respuesta.json();
+                })
+                .then(datos => {
+                    recursos_reales = {};
+                    const contenedorCatalogo = document.getElementById('contenedor-catalogo');
+                    const cuerpoTabla = document.getElementById('cuerpo-tabla-control');
+                    
+                    if (contenedorCatalogo) contenedorCatalogo.innerHTML = '';
+                    if (cuerpoTabla) cuerpoTabla.innerHTML = '';
+
+                    // Variables para los contadores
+                    let totalRecursos = 0;
+                    let prestamosActivos = 0;
+
+                    datos.forEach(recurso => {
+                        if (recurso === null) return;
+                        recursos_reales[recurso.id] = recurso;
+
+                        // Sumar al total
+                        totalRecursos++;
+                        
+                        // Calcular cuántos están prestados (Copias totales - Copias disponibles)
+                        const copiasTotales = recurso.copias || 0;
+                        const disponibles = recurso.copiasDisponibles !== undefined ? recurso.copiasDisponibles : copiasTotales;
+                        prestamosActivos += (copiasTotales - disponibles);
+
+                        let tipoRecurso = (recurso.edicion !== undefined || recurso.numeroPaginas === undefined) ? 'revista' : 'libro';
+                        const recursoId = recurso.id;
+                        const tituloEscapado = recurso.titulo ? recurso.titulo.replace(/'/g, "\\'") : 'Sin título';
+                        const autor = recurso.autor || 'Desconocido';
+                        const editorial = recurso.editorial || 'Desconocida';
+                        const copias = recurso.copias || 0;
+                        const estado = (recurso.copiasDisponibles && recurso.copiasDisponibles > 0) ? 'Disponible' : 'Agotado';
+
+                        // A. Llenar el Catálogo (Vista Explorar)
+                        if (contenedorCatalogo) {
+                            const tarjeta = `
+                                <div class="tarjeta-libro" data-id="${recursoId}" data-type="${tipoRecurso}">
+                                    <div class="imagen-placeholder">🖼️</div>
+                                    <p class="libro-titulo">${recurso.titulo || 'Sin título'}</p>
+                                    <p class="libro-autor">${autor}</p>
+                                    <div class="botones-tarjeta">
+                                        <button class="btn-accion btn-detalles" onclick="abrirDetalles('${recursoId}')">Detalles</button>
+                                        <button class="btn-accion btn-prestar" onclick="iniciarPrestamo('${recursoId}')">Prestar</button>
+                                    </div>
+                                </div>
+                            `;
+                            contenedorCatalogo.innerHTML += tarjeta;
+                        }
+
+                        // B. Llenar la Tabla (Panel de Control)
+                        if (cuerpoTabla) {
+                            const fila = `
+                                <tr>
+                                    <td>
+                                        <div class="info-recurso-control">
+                                            <div class="mini-imagen">🖼️</div>
+                                            <div class="texto-recurso">
+                                                <p class="titulo-recurso-tabla">${recurso.titulo || 'Sin título'}</p>
+                                                <p class="autor-recurso-tabla">${autor}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>${editorial}</td>
+                                    <td>${tipoRecurso === 'libro' ? 'Libro' : 'Revista'}</td>
+                                    <td>${copias}</td>
+                                    <td>${estado}</td>
+                                    <td>
+                                        <button class="btn-gestion" onclick="editarRecurso(${recursoId})">EDITAR</button>
+                                        <button class="btn-gestion" onclick="eliminarRecurso(${recursoId})">ELIMINAR</button>
+                                    </td>
+                                </tr>
+                            `;
+                            cuerpoTabla.innerHTML += fila;
+                        }
+                    }); // Aquí termina el forEach
+
+                    // ¡FIJATE AQUÍ! Actualizamos los contadores afuera del ciclo, cuando ya terminó de contar todo
+                    const badgeTotal = document.getElementById('badge-total');
+                    const badgePrestamos = document.getElementById('badge-prestamos');
+                    if (badgeTotal) badgeTotal.innerText = `TOTAL RECURSOS REGISTRADOS: ${totalRecursos}`;
+                    if (badgePrestamos) badgePrestamos.innerText = `PRÉSTAMOS ACTIVOS: ${prestamosActivos}`;
+                    cargarMisPrestamos();
+                })
+                .catch(error => {
+                    console.error("Error conectando al servidor:", error);
+                });
+        }
+        // Función exclusiva para el Bibliotecario: Cargar TODO
+        function cargarMisPrestamos() {
+            // Ya no validamos el ID para filtrar, porque el admin ve todo
+            fetch('/api/prestamos/todos')
+                .then(res => res.json())
+                .then(prestamos => {
+                    const tbody = document.getElementById('cuerpo-tabla-prestamos-admin');
+                    if (!tbody) return;
+                    tbody.innerHTML = ''; 
+
+                    let totalPrestados = 0;
+
+                    prestamos.forEach(prestamo => {
+                        totalPrestados++;
+                        const recursoAsociado = recursos_reales[prestamo.id_recurso];
+                        const titulo = recursoAsociado ? recursoAsociado.titulo : 'Recurso Desconocido';
+                        const autor = recursoAsociado ? recursoAsociado.autor : 'Desconocido';
+
+                        const fila = `
+                            <tr>
+                                <td>
+                                    <div class="tabla-info-recurso">
+                                        <div class="mini-imagen">🖼️</div>
+                                        <span>${titulo}</span>
+                                        <br><span style="font-size: 11px; color: gray;">Usuario ID: ${prestamo.id_usuario}</span>
+                                    </div>
+                                </td>
+                                <td>${autor}</td>
+                                <td>${prestamo.fecha_devolucion}</td>
+                                <td><button class="btn-devolver" onclick="devolverRecurso(${prestamo.id})">DEVOLVER</button></td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += fila;
+                    });
+
+                    const badges = document.querySelectorAll('#vista-prestamos .badge-resumen');
+                    if(badges.length > 0) {
+                        badges[0].innerText = `TOTAL RECURSOS PRESTADOS: ${totalPrestados}`;
+                    }
+                })
+                .catch(err => console.error("Error cargando todos los préstamos:", err));
+        }
+
+function devolverRecurso(idPrestamo) {
+            if(confirm("¿Confirmas la devolución de este recurso?")) {
+                fetch('/api/prestamos/' + idPrestamo + '/devolver', {
+                    method: 'PUT'
+                })
+                .then(respuesta => {
+                    if (respuesta.ok) {
+                        alert("¡Recurso devuelto con éxito!");
+                        // Recargamos ambas vistas para actualizar disponibilidades
+                        cargarCatalogoYTablaDesdeJava(); 
+                        cargarMisPrestamos(); 
+                    } else {
+                        alert("Error al procesar la devolución.");
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+            }
+        }
+
+        // --------------------------------------------------------
+        // 3. ENVIAR NUEVO RECURSO A JAVA
+        // --------------------------------------------------------
+function configurarFormularioAgregar() {
+            const formAdd = document.getElementById('form-add-recurso');
+            
+            if (formAdd) {
+                formAdd.addEventListener('submit', function (e) {
+                    e.preventDefault(); // Detener recarga de página
+
+                    // Capturamos los datos escritos en la modal
+                    const titulo = document.getElementById('add-titulo').value;
+                    const autor = document.getElementById('add-autor').value;
+                    const editorial = document.getElementById('add-editorial').value;
+                    const genero = document.getElementById('add-genero').value;
+                    const copias = document.getElementById('add-copias').value;
+                    const especifico = document.getElementById('input-especifico').value;
+                    const tipo = document.querySelector('input[name="tipoNuevo"]:checked').value;
+
+                    const recursoData = {
+                        titulo: titulo,
+                        autor: autor,
+                        editorial: editorial,
+                        genero: genero,
+                        copias: parseInt(copias)
+                    };
+
+                    if (tipo === 'libro') {
+                        recursoData.numeroPaginas = parseInt(especifico);
+                    } else {
+                        recursoData.edicion = parseInt(especifico);
+                    }
+
+                    // DETERMINACIÓN DINÁMICA: ¿Creación o Edición?
+                    let url = '/api/recursos/' + tipo; 
+                    let metodoHttp = 'POST';           
+
+                    // Si la variable global contiene un ID válido, cambiamos las propiedades a actualización
+                    if (idRecursoEditando !== null) {
+                        url = '/api/recursos/' + idRecursoEditando;
+                        metodoHttp = 'PUT'; 
+                        recursoData.tipo = tipo; 
+                    }
+
+                    // Abre la consola del navegador (F12) para ver este mensaje clave
+                    console.log("ℹ️ Enviando petición:", "Método:", metodoHttp, "URL:", url, "Datos:", recursoData);
+
+                    fetch(url, {
+                        method: metodoHttp,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(recursoData)
+                    })
+                    .then(respuesta => {
+                        if (respuesta.ok) {
+                            alert(idRecursoEditando !== null ? "¡Recurso actualizado con éxito!" : "¡Recurso añadido con éxito!");
+                            document.getElementById('modal-add-overlay').style.display = 'none';
+                            formAdd.reset(); 
+                            
+                            // IMPORTANTE: Limpiamos la variable global al finalizar con éxito
+                            idRecursoEditando = null; 
+                            
+                            // Reestablecemos el diseño original de la modal
+                            document.querySelector('.modal-add-header').childNodes[0].nodeValue = " AÑADIR NUEVO RECURSO ";
+                            document.querySelector('.btn-add-submit').innerText = "AGREGAR";
+                            
+                            cargarCatalogoYTablaDesdeJava(); // Refrescar los componentes visuales
+                        } else {
+                            alert("Error al procesar la solicitud en el servidor.");
+                        }
+                    })
+                    .catch(error => console.error("Error crítico en fetch:", error));
+                });
+            }
+
+            // Cambiar placeholder dinámicamente según la selección radial
+            const radiosTipo = document.querySelectorAll('input[name="tipoNuevo"]');
+            const inputEspecifico = document.getElementById('input-especifico');
+            radiosTipo.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    inputEspecifico.placeholder = e.target.value === 'libro' ? "No. Páginas" : "Edición";
+                });
+            });
+            
+            // Acción del botón principal para abrir la modal en modo "CREACIÓN"
+            const btnOpenAdd = document.querySelector('.btn-agregar');
+            if (btnOpenAdd) {
+                btnOpenAdd.addEventListener('click', () => {
+                    if(formAdd) formAdd.reset();
+                    idRecursoEditando = null; // Nos aseguramos de limpiar la variable
+                    document.querySelector('.modal-add-header').childNodes[0].nodeValue = " AÑADIR NUEVO RECURSO ";
+                    document.querySelector('.btn-add-submit').innerText = "AGREGAR";
+                    document.getElementById('modal-add-overlay').style.display = 'flex';
+                });
+            }
+        }
+
+        function editarRecurso(id) {
+            const recurso = recursos_reales[id];
+            if(!recurso) return;
+
+            // 1. Almacenamos el ID de destino en la variable global de control
+            idRecursoEditando = id;
+
+            // 2. Modificamos la apariencia de la ventana modal para modo edición
+            document.querySelector('.modal-add-header').childNodes[0].nodeValue = " EDITAR RECURSO ";
+            document.querySelector('.btn-add-submit').innerText = "GUARDAR CAMBIOS";
+
+            // 3. Cargamos los datos actuales en los campos correspondientes
+            document.getElementById('add-titulo').value = recurso.titulo || '';
+            document.getElementById('add-autor').value = recurso.autor || '';
+            document.getElementById('add-editorial').value = recurso.editorial || '';
+            document.getElementById('add-genero').value = recurso.genero || '';
+            document.getElementById('add-copias').value = recurso.copias || '';
+
+            const radios = document.querySelectorAll('input[name="tipoNuevo"]');
+            const inputEspecifico = document.getElementById('input-especifico');
+            
+            if (recurso.tipo === 'libro' || recurso.numeroPaginas !== undefined) {
+                radios[0].checked = true;
+                inputEspecifico.value = recurso.numeroPaginas || '';
+                inputEspecifico.placeholder = "No. Páginas";
+            } else {
+                radios[1].checked = true;
+                inputEspecifico.value = recurso.edicion || '';
+                inputEspecifico.placeholder = "Edición";
+            }
+
+            document.getElementById('modal-add-overlay').style.display = 'flex';
+        }
+// --------------------------------------------------------
+        // NUEVAS FUNCIONES: ELIMINAR Y EDITAR
+        // --------------------------------------------------------
+        function eliminarRecurso(id) {
+            // Confirmación de seguridad
+            if(confirm("¿Estás seguro de que deseas eliminar este recurso definitivamente? Esta acción no se puede deshacer.")) {
+                
+                fetch('/api/recursos/' + id, {
+                    method: 'DELETE' // Método HTTP para borrar
+                })
+                .then(respuesta => {
+                    if(respuesta.ok) {
+                        alert("¡Recurso eliminado de la base de datos!");
+                        cargarCatalogoYTablaDesdeJava(); // Recarga la tabla para que desaparezca
+                    } else {
+                        alert("Hubo un error al intentar eliminar el recurso.");
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+            }
+        }
+
+       
+        // --------------------------------------------------------
+        // 4. LÓGICA DE DETALLES Y PRÉSTAMOS (Igual que el lector)
+        // --------------------------------------------------------
+function abrirDetalles(id) {
+            llenarModalConDatos(id);
+            // ESTO ES CLAVE: Guardamos el ID por si el usuario decide pedirlo prestado desde aquí
+            document.getElementById('prestamo-recurso-id').value = id;
+            
+            document.getElementById('modal-recurso-overlay').style.display = 'flex';
+        }
+        function llenarModalConDatos(id) {
+            const recurso = recursos_reales[id];
+            if (!recurso) return;
+
+            document.getElementById('modal-titulo').innerHTML = recurso.titulo || 'Sin título';
+            document.getElementById('modal-autor').innerHTML = 'Autor: ' + (recurso.autor || 'Desconocido');
+            document.getElementById('modal-editorial').innerHTML = 'Editorial: ' + (recurso.editorial || 'N/A');
+            document.getElementById('modal-genero').innerHTML = 'Género: ' + (recurso.genero || 'N/A');
+            
+            const disponibles = recurso.copiasDisponibles !== undefined ? recurso.copiasDisponibles : 0;
+            const totales = recurso.copias !== undefined ? recurso.copias : 0;
+            document.getElementById('modal-status-badge').innerHTML = `DISPONIBLE: ${disponibles} de ${totales} copias`;
+
+            if (recurso.numeroPaginas !== undefined || recurso.tipo === 'libro') {
+                document.getElementById('modal-especifico-icon').innerHTML = '📖';
+                document.getElementById('modal-especifico-label').innerHTML = 'Páginas:';
+                document.getElementById('modal-especifico-valor').innerHTML = recurso.numeroPaginas || 'N/A';
+                document.getElementById('modal-tipo-icon').innerHTML = '📖';
+                document.getElementById('modal-tipo').innerHTML = 'Libro';
+            } else {
+                document.getElementById('modal-especifico-icon').innerHTML = '#';
+                document.getElementById('modal-especifico-label').innerHTML = 'Edición:';
+                document.getElementById('modal-especifico-valor').innerHTML = recurso.edicion || 'N/A';
+                document.getElementById('modal-tipo-icon').innerHTML = '📚';
+                document.getElementById('modal-tipo').innerHTML = 'Revista';
+            }
+        }
+
+        let recursoSeleccionadoParaPrestamo = "";
+       // --------------------------------------------------------
+        // LÓGICA DE PRÉSTAMOS
+        // --------------------------------------------------------
+        
+        function iniciarPrestamo(idRecurso) {
+            const recurso = recursos_reales[idRecurso];
+            if (!recurso) return;
+
+            // Guardamos el ID del recurso en el campo oculto de la modal
+            document.getElementById('prestamo-recurso-id').value = idRecurso;
+            document.getElementById('confirm-recurso-title').innerText = recurso.titulo || 'Sin título';
+
+            // Ocultamos la modal de detalles si venimos desde ahí
+            const modalDetalles = document.getElementById('modal-recurso-overlay');
+            if (modalDetalles) modalDetalles.style.display = 'none';
+
+            // Mostramos la modal de confirmación
+            document.getElementById('modal-confirmar-overlay').style.display = 'flex';
+        }
+
+function procesarPrestamo() {
+            const idRecurso = document.getElementById('prestamo-recurso-id').value;
+            const tituloRecurso = document.getElementById('confirm-recurso-title').innerText;
+            const fechaInput = document.querySelector('.input-fecha').value; 
+            
+            // NUEVO: Capturar la contraseña de la ventana modal
+            const passwordInput = document.querySelector('.input-password').value;
+
+            if(!fechaInput) {
+                alert("Por favor, selecciona una fecha de devolución.");
+                return;
+            }
+            if(!passwordInput) {
+                alert("Por favor, ingresa tu contraseña para confirmar.");
+                return;
+            }
+
+            // NUEVO: Leer quién está usando la computadora
+            const idUsuarioActual = localStorage.getItem('usuarioId');
+            if(!idUsuarioActual) {
+                alert("Error: Sesión no válida. Por favor inicia sesión de nuevo.");
+                window.location.href = "index.html";
+                return;
+            }
+
+            document.getElementById('modal-confirmar-overlay').style.display = 'none';
+
+            // Armamos el paquete con TODOS los datos reales
+            const payload = {
+                idRecurso: idRecurso,
+                fechaDevolucion: fechaInput,
+                idUsuario: idUsuarioActual, // Enviamos el ID real
+                contraseña: passwordInput   // Enviamos la clave ingresada
+            };
+
+            fetch('/api/prestamos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(respuesta => {
+                if (respuesta.ok) {
+                    document.getElementById('success-recurso-title').innerText = '"' + tituloRecurso + '"';
+                    document.getElementById('modal-exito-overlay').style.display = 'flex';
+                    cargarCatalogoDesdeJava(); 
+                    cargarMisPrestamos(); 
+                } else {
+                    // Si falla, mostramos el mensaje exacto que manda Java
+                    return respuesta.text().then(text => {
+                        document.getElementById('error-recurso-title').innerText = '"' + tituloRecurso + '"';
+                        // Buscamos el div del mensaje de error para cambiar el texto
+                        document.querySelector('.error-msg-box').innerText = "Error: " + text;
+                        document.getElementById('modal-error-overlay').style.display = 'flex';
+                    });
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        function cerrarModalAction(tipo) {
+            document.getElementById(`modal-${tipo}-overlay`).style.display = 'none';
+        }
+
+        // --------------------------------------------------------
+        // 5. NAVEGACIÓN Y CIERRE DE MODALES
+        // --------------------------------------------------------
+        function cambiarPestana(pestana) {
+            document.getElementById('btn-explorar').classList.remove('active');
+            document.getElementById('btn-prestamos').classList.remove('active');
+            document.getElementById('btn-control').classList.remove('active');
+            document.getElementById('vista-explorar').classList.remove('active');
+            document.getElementById('vista-prestamos').classList.remove('active');
+            document.getElementById('vista-control').classList.remove('active');
+
+            if (pestana === 'explorar') {
+                document.getElementById('btn-explorar').classList.add('active');
+                document.getElementById('vista-explorar').classList.add('active');
+            } else if (pestana === 'prestamos') {
+                document.getElementById('btn-prestamos').classList.add('active');
+                document.getElementById('vista-prestamos').classList.add('active');
+            } else if (pestana === 'control') {
+                document.getElementById('btn-control').classList.add('active');
+                document.getElementById('vista-control').classList.add('active');
+            }
+        }
+
+        function configurarCierreDeModales() {
+            // Modales
+            const overlayAdd = document.getElementById('modal-add-overlay');
+            const overlayDetalles = document.getElementById('modal-recurso-overlay');
+            
+            // Botones X y Cerrar
+            const btnCloseAdd = document.getElementById('btn-close-add');
+            const cerrarBtnDetalles = document.getElementById('btn-cerrar-modal-detalles');
+
+            if (btnCloseAdd) btnCloseAdd.addEventListener('click', () => overlayAdd.style.display = 'none');
+            if (cerrarBtnDetalles) cerrarBtnDetalles.addEventListener('click', () => overlayDetalles.style.display = 'none');
+
+            // Click fuera de las modales
+            window.addEventListener('click', (event) => {
+                if (event.target === overlayAdd) overlayAdd.style.display = 'none';
+                if (event.target === overlayDetalles) overlayDetalles.style.display = 'none';
+            });
+            
+            // Botón solicitar desde detalles
+            const btnSolicitarModal = document.querySelector('.btn-solicitar');
+            if(btnSolicitarModal) {
+                btnSolicitarModal.addEventListener('click', function() {
+                    const titulo = document.getElementById('modal-titulo').innerText;
+                    iniciarPrestamo(titulo);
+                });
+            }
+        }
+
+        
+    </script>
+</body>
+
+</html>
